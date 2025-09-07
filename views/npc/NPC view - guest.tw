@@ -69,6 +69,13 @@
 	<</link>>
 <</if>>
 
+<<if $player.energy >= 10 && $tmpGirl.location !== 'garden' && ($tmpGirl.traits ?? []).includes('masochist') && setup.NpcInHome($tmpGirl)>>
+	<<set _linkName = 'Punish ' + _himOrHer>>
+	<<link `_linkName`>>
+		<<goto 'NPC punish'>>
+	<</link>>
+<</if>>
+
 <<if $player.energy > 30 && $tmpGirl.location !== 'garden' && $tmpGirl.location !== 'gloryhole' && !$tmpGirl.gender && setup.NpcInHome($tmpGirl)>>
 	<<set _linkName = 'Fuck ' + _himOrHer + ' in a threesome'>>
 	<<link `_linkName`>>
