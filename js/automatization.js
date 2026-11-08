@@ -171,3 +171,18 @@ setup.automatization = {
 
   jobWeaponsCustom: { knife: false, sword: false, crossbow: false },
 };
+
+/* Joins NPC names for the morning report, merging repeated entries: "Ashley (x2), Elijah" */
+setup.automatization.formatNpcList = function (npcs) {
+  const counts = new Map();
+  for (const npc of npcs) {
+    const key = npc.id ?? npc.name;
+    const entry = counts.get(key) ?? { name: npc.name, n: 0 };
+    entry.n++;
+    counts.set(key, entry);
+  }
+  return [...counts.values()]
+    .map((e) => (e.n > 1 ? `${e.name} (x${e.n})` : e.name))
+    .sort()
+    .join(', ');
+};

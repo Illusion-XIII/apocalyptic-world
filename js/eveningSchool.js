@@ -184,7 +184,7 @@ setup.eveningSchool = {
         const focus = tradesOf(npc).length ? setup.getRandomElement(tradesOf(npc)) : null;
 
         // Prefer the skill that matches the job they actually work, so the anecdote fits.
-        const others = guests.filter(g => g.id !== npc.id && tradesOf(g).length).shuffle().slice(0, 2).map(g => {
+        const others = setup.npcs.pick(guests, 2, g => g.id !== npc.id && tradesOf(g).length).map(g => {
             const skills = tradesOf(g);
             return { npc: g, skill: skills.find(s => this.tradeJobs[s] === g.assignedTo) ?? setup.getRandomElement(skills) };
         });
@@ -231,14 +231,9 @@ setup.eveningSchool = {
         return 'Opening in ' + when + '.';
     },
 
-    // Companions are keyed by list index ('guest:3', 'slave:1'); match by id so copies like $tmpGirl work too.
+    // Matches by id, so copies like $tmpGirl work too.
     isCompanion: function (npc) {
-        const v = variables();
-        const lists = { guest: v.guests ?? [], slave: v.slaves ?? [] };
-        return Object.keys(v.player.companions ?? {}).some(function (key) {
-            const [type, index] = key.split(':');
-            return lists[type] !== undefined && lists[type][index]?.id === npc.id;
-        });
+        return setup.companions.has(npc);
     },
 
     // Students in class right now (guests first, then slaves), optionally only those taking cls.

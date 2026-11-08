@@ -5,9 +5,9 @@
 
 <<if typeof $randEvent === 'undefined'>>
 	<<set
-		_femaleGuestIds = setup.getRandomPersons($tmpEvent[0], 1),
-		_transfemaleGuestIds = setup.getRandomPersons($tmpEvent[1], 1),
-		_maleGuestIds = setup.getRandomPersons($tmpEvent[2], 1),
+		_femaleGuestIds = setup.npcs.pick($tmpEvent[0], 1),
+		_transfemaleGuestIds = setup.npcs.pick($tmpEvent[1], 1),
+		_maleGuestIds = setup.npcs.pick($tmpEvent[2], 1),
 		_guestIds = [_femaleGuestIds[0], _transfemaleGuestIds[0], _maleGuestIds[0]],
 		_minCorruption = Math.min($guests[_guestIds[0]].corruption, $guests[_guestIds[1]].corruption, $guests[_guestIds[2]].corruption),
 		_isVirgin = $guests[_guestIds[0]].virgin,
@@ -185,17 +185,26 @@
 							<<fuck $tmpGirl>>
 						<</linkreplace>>
 					<<else>>
-						<<=setup.displayName($guests[_yesGuestIds[0]], true)>> and <<=setup.displayName($guests[_yesGuestIds[1]], true)>> agree to have a threesome with you!
-						<<linkreplace 'Continue'>>
-							<<set $guestId = _yesGuestIds[0],
-							$tmpGirl = $guests[_yesGuestIds[0]],
-							$guestId2 = _yesGuestIds[1],
-							$tmpGirl2 = $guests[_yesGuestIds[1]]>>
-							<<unset $randEvent, $tmpEvent>>
-							<<set $tmpGirlViewBack = 'NPC view - guest'>>
-							<<unset $charId, $slaveId>>
-							<<threesome $tmpGirl $tmpGirl2>>
-						<</linkreplace>>					
+						/* only partner combinations that have a threesome scene, see setup.sex.threesomeImplemented (js/sex.js) */
+						<<set _pairIds = setup.sex.threesomePair(_yesGuestIds, i => $guests[i])>>
+						<<if _pairIds>>
+							<<=setup.displayName($guests[_pairIds[0]], true)>> and <<=setup.displayName($guests[_pairIds[1]], true)>> agree to have a threesome with you!
+							<<linkreplace 'Continue'>>
+								<<set $guestId = _pairIds[0],
+								$tmpGirl = $guests[_pairIds[0]],
+								$guestId2 = _pairIds[1],
+								$tmpGirl2 = $guests[_pairIds[1]]>>
+								<<unset $randEvent, $tmpEvent>>
+								<<set $tmpGirlViewBack = 'NPC view - guest'>>
+								<<unset $charId, $slaveId>>
+								<<threesome $tmpGirl $tmpGirl2>>
+							<</linkreplace>>
+						<<else>>
+							<<=setup.displayName($guests[_yesGuestIds[0]], true)>> and <<=setup.displayName($guests[_yesGuestIds[1]], true)>> agree to have a threesome with you!
+							<br /><br />
+							But once the three of you are alone, nobody can agree on who does what, and the mood is gone. Maybe another time.
+							<br /><br />
+						<</if>>
 					<</if>>
 				<</if>>
 			<</linkreplace>>
