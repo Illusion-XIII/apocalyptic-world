@@ -1,4 +1,16 @@
 :: Nursery [Place bg-nursery] {"position":"1346,773","size":"100,100"}
+<<if previous() === 'Youth district'>>
+	<<if setup.nurseryCare.shouldTalk()>>
+		<<goto 'Event - Nursery - caretaker talk'>>
+	<<elseif setup.nurseryBirthday.start()>>
+		<<goto 'Nursery encounter - birthday'>>
+	<<else>>
+		<<set _ncEncounter = setup.nurseryEncounters.roll()>>
+		<<if _ncEncounter>>
+			<<goto _ncEncounter>>
+		<</if>>
+	<</if>>
+<</if>>
 <h1 class="ptitle">
 	<<backButton 'Youth district'>>		
 	NURSERY
@@ -15,22 +27,15 @@
 	<<set _sleepingChance = 100>>
 <</if>>
 
+<<include 'Nursery - care panel'>>
+
 <<if ($nursery ?? []).length < 1>>
 	<div style="margin-top: 20px;">
 		No one is living here...
 	</div>
 <<else>>
 
-	<<set _nurserySorter = setup.npcSortedIndices($nursery, $nsortBy)>>
-	<<if ($nsortBy === 'M')>>
-		<<run _nurserySorter.sort((a, b) => {
-			const mA = setup.getNpcById($nursery[a].family?.mother)?.name ?? 'zzz';
-			const mB = setup.getNpcById($nursery[b].family?.mother)?.name ?? 'zzz';
-			return mA < mB ? -1 : mA > mB ? 1 : 0;
-		})>>
-	<<elseif ($nsortBy === 'A')>>
-		<<run _nurserySorter.sort((a, b) => setup.getAge($nursery[b]) - setup.getAge($nursery[a]))>>
-	<</if>>
+	<<set _nurserySorter = setup.nurseryCare.sortedIndices()>>
 
 	<<set $nSortPanelOpen ??= false>>
 	<<set _nSelfReload = State.history.length > 1 && State.history[State.history.length - 2].title === 'Nursery'>>
@@ -106,25 +111,30 @@
 			<<if (_nursery.family ?? false) && (_nursery.family.mother ?? false)>>
 				<<set _motherNpc = setup.getNpcById(_nursery.family.mother)>>
 			<</if>>
+			/* Mothers who live elsewhere (settlement leaders) can't be looked up, so the child keeps her name */
+			<<set _motherAway = _motherNpc ? '' : (_nursery.family?.motherName ?? '')>>
+			<<set _momKey = _motherAway || _motherNpc>>
 			<<if $nsortBy === 'M'>>
-				<<if _motherNpc !== _currentMom>>
+				<<if _momKey !== _currentMom>>
 					<tr class="item">
 						<td colspan="3">
 							<<if (_motherNpc?.name ?? false)>>
 								Kid(s) of <<=setup.displayName(_motherNpc)>>:
+							<<elseif _motherAway>>
+								Kid(s) of <<= _motherAway>>:
 							<<else>>
 								Orphan(s):
 							<</if>>
 						</td>
 					</tr>
-					<<set _currentMom = _motherNpc>>
+					<<set _currentMom = _momKey>>
 				<</if>>
 			<</if>>
 
 			<tr class="item">
 				<td class="min25">
 					<span @class="_genderClass + _customColorStyle">
-						<span data-balloon-length="medium" @aria-label="'Mother: ' + (_motherNpc ? _motherNpc.name : '????') + ''" data-balloon-pos="up-left">
+						<span data-balloon-length="medium" @aria-label="'Mother: ' + (_motherNpc ? _motherNpc.name : (_motherAway || '????')) + ''" data-balloon-pos="up-left">
 							<<link _nursery.name>>
 								<<unset $guestId, $charId, $slaveId>>
 								<<set $childId = _realIdx>>

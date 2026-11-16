@@ -146,6 +146,19 @@ Save.onLoad.add(function (save) {
             variables.characters.isabel.canTalk = true;
         }
 
+        /* Saves from before the non-sex story paths: Desperate Isabel, her move-in, the Dom dinner and secret meeting 3
+           were forced sex scenes, so reaching any of them means the MC already slept with her. Only when neither
+           new flag exists yet, so later saves (where the player chose) are never touched. */
+        const _isabelQuests = variables.characters.isabel.quests;
+        if (_isabelQuests && typeof _isabelQuests.hadSex === 'undefined' && typeof _isabelQuests.declinedSex === 'undefined' && (
+            variables.characters.dom?.quests?.isabel_beg ||
+            variables.characters.dom?.quests?.dinner ||
+            _isabelQuests.temp_home ||
+            typeof _isabelQuests.secret_meeting3_day !== 'undefined'
+        )) {
+            _isabelQuests.hadSex = true;
+        }
+
         if (
             typeof save.state.history[save.state.index].variables.charId !== 'undefined' && 
             save.state.history[save.state.index].variables.charId === 'isabel' && 
@@ -663,6 +676,34 @@ Save.onLoad.add(function (save) {
                 ally.key = ally.id;
             }
         }
+    });
+
+    /* sex act counters: statsSex (acts with anyone) → generalSexStats, sexStats (acts with the MC) → mainCharSexStats,
+       in every NPC of every history moment (best effort, see setup.sexActs.migrateLegacyCounters); the per-scene
+       $sexStats flags became $sexActsThisScene.
+       Then the counters are made sparse (setup.sexActs.compactCounters): older saves held all 39 metrics at 0.
+       Also: men and trans women lose a `pussy` field (boys born before setup.humans.newBorn got pussy = 0, and the
+       sex change surgery kept it); scenes take it as "has a pussy". */
+    save.state.history.forEach(function (moment) {
+        const seen = new WeakSet();
+        (function walk(value, depth) {
+            if (!value || typeof value !== 'object' || seen.has(value) || depth > 6
+                || value instanceof Date || value instanceof Set || value instanceof Map) {
+                return;
+            }
+            seen.add(value);
+            if (typeof value.gender !== 'undefined') {
+                setup.sexActs.migrateLegacyCounters(value);
+                setup.sexActs.compactCounters(value);
+                if (!setup.humans.has(Number(value.gender), 'pussy')) {
+                    delete value.pussy;
+                }
+            }
+            for (const key of Object.keys(value)) {
+                walk(value[key], depth + 1);
+            }
+        })(moment.variables, 0);
+        delete moment.variables.sexStats;
     });
 
     for(var saveWantedI = 0; saveWantedI < (save.state.history[save.state.index].variables.wanted ?? []).length; saveWantedI++) {

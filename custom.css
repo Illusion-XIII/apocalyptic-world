@@ -658,7 +658,8 @@ div#family-tree:hover div#family-tree-expanded {
   transform: rotate(90deg);
 }
 #vc-wrapper input:checked ~ .tab-content {
-  max-height: 200vh;
+  /* no cap: a long version (0.91 has 60+ lines) was cut off at 200vh, worst on phones */
+  max-height: none;
   padding: 1em;
 }
 #vc-wrapper .tab-label,
@@ -1134,6 +1135,47 @@ ul.tab li {
 #additional-npc-info-single div {
   flex-basis: 50%;
   box-sizing: border-box;
+}
+
+/* NPC info → More info → Sex history (setup.sexActs.metricsTable) */
+#additional-npc-info-single #npc-sex-metrics {
+  flex-basis: 100%;
+}
+
+#npc-sex-metrics h4 {
+  margin: 6px 0 2px;
+}
+
+#additional-npc-info-single #npc-sex-metrics .npc-sex-metrics-summary {
+  flex-basis: auto;
+  margin-bottom: 4px;
+}
+
+#npc-sex-metrics table {
+  margin-top: 0;
+  border-collapse: collapse;
+  max-width: 100%;
+}
+
+#npc-sex-metrics th,
+#npc-sex-metrics td {
+  padding: 1px 10px 1px 0;
+  text-align: left;
+}
+
+#npc-sex-metrics td:first-child {
+  overflow-wrap: anywhere;
+}
+
+#npc-sex-metrics td + td,
+#npc-sex-metrics th + th {
+  text-align: right;
+}
+
+#npc-sex-metrics .npc-sex-metrics-group th {
+  padding-top: 6px;
+  font-style: italic;
+  font-weight: normal;
 }
 
 #girl_info_stats a {
